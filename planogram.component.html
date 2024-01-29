@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+</head>
+<body>
+
+    <div class="title1">
+        <!-- Title -->
+        <div>
+            <div class="text-4xl font-extrabold tracking-tight leading-none">
+                planogram
+            </div>
+        </div>
+
+        <div class="header-btns">
+            <button class="ml-3 add-po-button" mat-flat-button [color]="'primary'" (click)="openpopup()">
+                <mat-icon>add</mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- Your other content goes here -->
+    <form [formGroup]="dialogForm" (ngSubmit)="onSubmit()">
+        <div class="overlay" *ngIf="show">
+          <div class="content">
+            <div class="close" (click)="closepopup()">
+              &times;
+            </div>
+            <div class="formGroup">title: <input type="text" class="form-control" id="title" formControlName="title"></div>
+            <p *ngIf="!dialogForm?.get('title')?.valid  && dialogForm?.get('title')?.touched" class="redcolor">Title name is required</p>
+            <div class="formGroup">Discription: <input type="text" class="form-control" id="discription" formControlName="discription"></div>
+            <p *ngIf="!dialogForm?.get('discription')?.valid  && dialogForm?.get('discription')?.touched" class="redcolor">discription is required</p>
+            <div class="formGroup"> No of Rows: <input type="number" class="form-control" id="no-of-rows" formControlName="no_of_Rows"></div>
+            <p *ngIf="!dialogForm?.get('no_of_Rows')?.valid   && dialogForm?.get('no-of-rows')?.touched" class="redcolor">No Of Rows Required</p>
+            <div class="formGroup">No of Columns: <input type="number" class="form-control" id="no_of_columns" formControlName="no_of_columns"></div>
+            <p *ngIf="!dialogForm?.get('no_of_columns')?.valid  && dialogForm?.get('no_of_columns')?.touched" class="redcolor">No Of Columns Required</p>
+            <button class="btn btn-primary mt-4" [disabled]="!dialogForm?.valid">Submit</button>
+          </div>
+        </div>
+      </form>
+      
+      <!--  header  -->
+      <div *ngIf="dialogForms.length > 0">
+        <div class="user-details" *ngFor="let form of dialogForms; let r =index">
+          <div class="user-details-item">
+            <p class="p-6"><strong>Title:</strong> {{ form.title }}</p>
+            <p class="p-6"><strong>Discription:</strong> {{ form.discription }}</p><br>
+            <p class="p-6"><strong>No of Rows:</strong> {{ form.no_of_Rows }}</p>
+            <p class="p-6"><strong>No of Columns:</strong> {{ form.no_of_columns }}</p>
+            <div class="adhoc" style="margin-left: auto">
+                <button
+                    mat-icon-button
+                    color="primary"
+                    (click)="toggleDropdown(form)"
+                >
+                    <mat-icon>keyboard_arrow_down</mat-icon>
+                </button>
+            </div>
+           
+          </div>
+          <div *ngIf="form.showDropdown" class="dropdown-content" >
+            <!-- Display cards based on no_of_Rows and no_of_columns -->
+            
+            <div *ngFor="let row of cardData[r]; let i = index" class="row" cdkDropList [id]="'row-' + i" (cdkDropListDropped)="drop($event)" cdkDrag >
+              <div class="row-header">Row {{ i + 1 }}</div>
+              <div *ngFor="let col of row; let j = index" class="card"  (click)="openCardPopup(r+'-'+i+'-'+j, col)" (click)="editCardDetails(r+'-'+i+'-'+j, col)" cdkDrag [id]="'card-' + i + '-' + j">
+                <p style="position: absolute; margin-bottom: 250px;margin-right: 190px;">{{ i + 1 }}{{ j + 1 }}</p>
+                <p style="margin-top: 50p;">Card {{ i * form.no_of_columns + j + 1 }}</p>
+                  <div *ngIf="col?.details?.Product">
+                    <!-- Display card details for the selected card -->
+                    <img [src]=" col?.details?.image" alt="Item Image" width="50" height="50"> 
+                    <p style="margin-bottom: 0.2rem;"><strong>ItemName:</strong> {{ col?.details?.user?.name }}</p>
+                    <p style="margin-bottom: 0.2rem;"><strong>Price:</strong> {{ col?.details?.price }}</p>
+                    <p style="margin-bottom: 0.2rem;"><strong>Product:</strong> {{ col?.details?.Product }}</p>
+                    <p style="margin-bottom: 0.2rem;"> <strong>Maxquantity:</strong> {{ col?.details?.Maxquantity }}</p>
+                    <p style="margin-bottom: 0.2rem;"><strong>Spring Type:</strong> {{ col?.details?.springType }}</p>
+                    <p style="margin-bottom: 0.2rem;"><strong>Slot Type:</strong> {{ col?.details?.slotType }}</p>
+                    
+                </div>
+              </div>
+          </div>
+          
+              
+        </div>
+        </div>
+      </div>
+     <form [formGroup]="cardForm" (ngSubmit)="onsubmit1()">
+        <div class="overlay" *ngIf="show1">
+            <div class="content" >
+                <div class="close" (click)="closecardpopup()">
+                    &times;
+                  </div>
+                  <div class="formid">
+                    <p style="margin-right: 20px;"><strong>Row Number:</strong> {{ getInt(currentCardDetails.split('-')[1])+1 }}</p>
+                    <p><strong>Slot ID:</strong> {{ getInt(currentCardDetails.split('-')[1])+1 }}{{getInt(currentCardDetails.split('-')[2])+1}}</p>
+                  </div>
+                  <div class="form-group">
+                    ItemName:
+                    <mat-select formControlName="ItemName" placeholder="Select Item">
+                      <mat-option *ngFor="let user of dbData.users" [value]="user.name">
+                        {{ user.name }}
+                      </mat-option>
+                    </mat-select>
+                  </div>
+                  <div class="form-group">
+                    Product:
+                    <mat-select formControlName="Product" placeholder="Select Item">
+                        <mat-option *ngFor="let Product of Products" [value]="Product">{{ Product }}</mat-option>
+                    </mat-select>
+                </div>                
+                <p *ngIf="!cardForm.get('Product')?.valid && cardForm.get('Product').touched" class="redcolor">Product Name Required</p>
+                  
+                  <div class="form-group">Maxquantity: <input type="text" class="form-control" id="Maxquantity" formControlName="Maxquantity"></div>
+                  <p *ngIf="!cardForm.get('Maxquantity')?.valid && cardForm.get('Maxquantity').touched" class="redcolor">Maxquantity Required</p>
+                  <div class="form-group">
+                    spring Type:
+                    <mat-select formControlName="springType" placeholder="Select Item">
+                        <mat-option *ngFor="let springType of springTypes" [value]="springType">{{ springType }}</mat-option>
+                    </mat-select>
+                </div>
+                <p *ngIf="!cardForm.get('springType')?.valid && cardForm.get('springType').touched" class="redcolor">Spring Type Required</p>
+                <div class="form-group">
+                  slot Type:
+                  <mat-select formControlName="slotType" placeholder="Select Item">
+                      <mat-option *ngFor="let slotType of slotTypes" [value]="slotType">{{ slotType }}</mat-option>
+                  </mat-select>
+              </div>
+              <p *ngIf="!cardForm.get('slotType')?.valid && cardForm.get('slotType').touched" class="redcolor">Slot Type Required</p>
+                <button class="btn btn-primary mt-4" [disabled]="!cardForm.valid">Add</button>
+            </div>
+          </div>
+     </form>
+     
+
+</body>
+</html>     
+
